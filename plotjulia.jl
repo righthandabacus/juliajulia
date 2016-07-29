@@ -16,12 +16,14 @@ function main()
     pix_h = parsed_args["dim"][2]
     mandelbrot = parsed_args["mandelbrot"]
     c0 = parsed_args["C"]
+    er = parsed_args["er"]
+    nmax = parsed_args["nmax"]
     filename = parsed_args["filename"]
-    println("Plot $pix_w x $pix_h from $min_z to $max_z with c0 = $c0 to $filename (Mandelbrot=$mandelbrot)")
+    println("Plot $pix_w x $pix_h from $min_z to $max_z with c0 = $c0 to $filename (Mandelbrot=$mandelbrot, ER=$er, nmax=$nmax)")
     if mandelbrot
-        plot_mandelbrot(pix_w, pix_h, min_z, max_z, c0, filename)
+        plot_mandelbrot(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
     else
-        plot_julia(pix_w, pix_h, min_z, max_z, c0, filename)
+        plot_julia(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
     end
 end
 
@@ -53,6 +55,16 @@ function parse_commandline()
             help = "Upper right complex coordinate of output"
             arg_type = Complex
             default = 1.5+1.5im
+         "--er", "-r"
+            help = "Escape radius to use in applicable functions"
+            arg_type = Real
+            default = 4.0
+            range_tester = (x -> x>0)
+         "--nmax", "-N"
+            help = "Max loop count to use in applicable functions"
+            arg_type = Int
+            default = 200 # 500 will be too slow for Mandelbrot plots
+            range_tester = (x -> x>0)
          "filename"
             help = "Output filename"
             required = true
@@ -229,15 +241,15 @@ function generic_plot(pix_w, pix_h, min_z, max_z, c0, filename, compute, transfo
 end
 
 # Plot black-and-white image of the fill-in Mandelbrot set
-function plot_mandelbrot_bw(pix_w, pix_h, min_z, max_z, c0, filename)
-    compute(z,c) = count_escape(c,z,4,500) != Inf
+function plot_mandelbrot_bw(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
+    compute(z,c) = count_escape(c,z,er,nmax) != Inf
     transform = black_and_white
     generic_plot(pix_w, pix_h, min_z, max_z, c0, filename, compute, transform)
 end
 
 # Plot black-and-white image of the fill-in Julia set
-function plot_julia_bw(pix_w, pix_h, min_z, max_z, c0, filename)
-    compute(z,c) = count_escape(z,c,4,500) != Inf
+function plot_julia_bw(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
+    compute(z,c) = count_escape(z,c,er,nmax) != Inf
     transform = black_and_white
     generic_plot(pix_w, pix_h, min_z, max_z, c0, filename, compute, transform)
 end
@@ -273,12 +285,12 @@ function _old()
     print("Written $pgm_name\nFinished in $(t-t_0) seconds.\n")
 end
 
-function plot_mandelbrot(pix_w, pix_h, min_z, max_z, c0, filename)
-    plot_mandelbrot_bw(pix_w, pix_h, min_z, max_z, c0, filename)
+function plot_mandelbrot(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
+    plot_mandelbrot_bw(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
 end
 
-function plot_julia(pix_w, pix_h, min_z, max_z, c0, filename)
-    plot_julia_bw(pix_w, pix_h, min_z, max_z, c0, filename)
+function plot_julia(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
+    plot_julia_bw(pix_w, pix_h, min_z, max_z, c0, er, nmax, filename)
 end
 
 # TODO normalised iteration count
