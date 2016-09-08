@@ -1,0 +1,4 @@
+# Julia set pictures are produced by script, thus not saved into repo
+*.png
+*.pgm
+*.pnm
